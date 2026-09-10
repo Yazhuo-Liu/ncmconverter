@@ -20,4 +20,7 @@ ncm_core = { workspace = true }
 ncm_meta = { workspace = true }
 
 [dev-dependencies]
+id3      = { workspace = true }
+metaflac = { workspace = true }
+sha2     = { workspace = true }
 testing = { workspace = true }

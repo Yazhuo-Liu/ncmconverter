@@ -27,12 +27,27 @@ https://rustup.rs
 ## Usage
 
 ```bash
-# convert
+# convert one file
 ncmc path/to/your/file.ncm
 
-# dump mode
+# scan only the top level of a directory (.ncm and .NCM files)
+ncmc path/to/music-directory
+
+# recursively scan one or more directories; direct file inputs can be mixed in
+ncmc --recursive path/to/music-directory another/file.ncm
+
+# do not overwrite audio output files that already exist
+ncmc --recursive --skip-existing path/to/music-directory
+
+# dump decrypted key, metadata, cover, and audio data
 ncmc --dump path/to/your/file.ncm
 ```
+
+Directory scans only select NCM files, use ASCII case-insensitive extension matching, and do not
+follow symlinks found inside a scanned directory. Direct file inputs are not extension-filtered.
+Conversions run serially. A failed file is reported while the remaining files continue; each run
+ends with a `total`, `succeeded`, `skipped`, and `failed` summary. Any failed discovery or
+conversion makes the command exit with a non-zero status.
 
 ---
 
