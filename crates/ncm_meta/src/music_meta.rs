@@ -18,13 +18,13 @@ make_place!(Place);
 #[derive(Debug)]
 #[allow(dead_code)]
 pub(crate) enum MusicId {
-    Num(u32),
+    Num(u64),
     Str(String),
 }
 
 impl de::Visitor for Place<MusicId> {
     fn string(&mut self, s: &str) -> miniserde::Result<()> {
-        let out = match s.parse::<u32>() {
+        let out = match s.parse::<u64>() {
             Ok(value) => MusicId::Num(value),
             Err(..) => MusicId::Str(s.to_string()),
         };
@@ -34,8 +34,7 @@ impl de::Visitor for Place<MusicId> {
     }
 
     fn nonnegative(&mut self, n: u64) -> miniserde::Result<()> {
-        let value = n as u32;
-        self.out = Some(MusicId::Num(value));
+        self.out = Some(MusicId::Num(n));
 
         Ok(())
     }

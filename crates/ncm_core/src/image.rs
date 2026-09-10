@@ -47,14 +47,24 @@ impl Image {
 
 impl From<Vec<u8>> for Image {
     fn from(value: Vec<u8>) -> Self {
-        match (&value[..4], &value[4..8], &value[8..12]) {
-            (b"\x89PNG", [0x0D, 0x0A, 0x1A, 0x0A], _) => Image(Type::Png, value),
-            ([0xFF, 0xD8, 0xFF, 0xE0 | 0xE1 | 0xE2 | 0xE3 | 0xE8], ..) => Image(Type::Jpeg, value),
-            (b"RIFF", _, b"WEBP") => Image(Type::Webp, value),
-            (b"GIF8", ..) => Image(Type::Gif, value),
-            ([b'B', b'M', ..], ..) => Image(Type::Bmp, value),
-            _ => Image(Type::Unknown, value),
-        }
+        let image_type = if value.starts_with(b"\x89PNG\r\n\x1A\n") {
+            Type::Png
+        } else if matches!(
+            value.as_slice(),
+            [0xFF, 0xD8, 0xFF, 0xE0 | 0xE1 | 0xE2 | 0xE3 | 0xE8, ..]
+        ) {
+            Type::Jpeg
+        } else if value.starts_with(b"RIFF") && value.get(8..12) == Some(b"WEBP") {
+            Type::Webp
+        } else if value.starts_with(b"GIF8") {
+            Type::Gif
+        } else if value.starts_with(b"BM") {
+            Type::Bmp
+        } else {
+            Type::Unknown
+        };
+
+        Image(image_type, value)
     }
 }
 
@@ -79,5 +89,13 @@ mod tests {
         data[..4].copy_from_slice(&[0xFF, 0xD8, 0xFF, 0xE0]);
         let image = Image::from(data);
         assert_eq!(image.ext(), "jpeg");
+    }
+
+    #[test]
+    fn short_images_are_unknown_without_panicking() {
+        for len in 0..12 {
+            let image = Image::from(vec![0; len]);
+            assert_eq!(image.ext(), "image");
+        }
     }
 }

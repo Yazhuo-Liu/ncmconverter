@@ -34,7 +34,7 @@ impl From<[u8; 12]> for Type {
         match &value[..4] {
             b"fLaC" => Type::Flac,
             b"OggS" => Type::Ogg,
-            [0xFF, 0xFB, ..] => Type::Mp3,
+            header if is_mpeg_layer_iii_header(header) => Type::Mp3,
             [b'I', b'D', b'3', ..] => Type::Mp3,
             _ => {
                 if &value[4..12] == b"ftypM4A " {
@@ -45,6 +45,21 @@ impl From<[u8; 12]> for Type {
             }
         }
     }
+}
+
+fn is_mpeg_layer_iii_header(header: &[u8]) -> bool {
+    header.len() >= 4
+        && header[0] == 0xFF
+        && header[1] & 0xE0 == 0xE0
+        // MPEG version 01 is reserved.
+        && header[1] & 0x18 != 0x08
+        // Layer bits 01 mean Layer III.
+        && header[1] & 0x06 == 0x02
+        // Free format and bad bitrate values cannot identify a normal audio frame.
+        && header[2] & 0xF0 != 0
+        && header[2] & 0xF0 != 0xF0
+        // Sample rate index 11 is reserved.
+        && header[2] & 0x0C != 0x0C
 }
 
 type Rc4Iter = Cycle<std::array::IntoIter<u8, 256_usize>>;
@@ -109,5 +124,18 @@ where
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_tuple("Audio").field(&format!("{}", self.r#type)).finish()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Type;
+
+    #[test]
+    fn detects_mpeg_layer_iii_variants() {
+        assert!(matches!(Type::from([0xFF, 0xFB, 0x90, 0, 0, 0, 0, 0, 0, 0, 0, 0]), Type::Mp3));
+        assert!(matches!(Type::from([0xFF, 0xF2, 0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0]), Type::Mp3));
+        assert!(matches!(Type::from([0xFF, 0xE2, 0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0]), Type::Mp3));
+        assert!(matches!(Type::from([0xFF, 0xFB, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]), Type::Unknown));
     }
 }

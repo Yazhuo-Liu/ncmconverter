@@ -65,39 +65,85 @@ impl Encoder {
                 buffer.write_all(&data)?;
             }
             AudioType::Mp3 => {
-                let mut tag = id3::Tag::read_from2(&mut Cursor::new(&buffer))?;
-                let mut data_reader = Cursor::new(&buffer);
-                id3::Tag::skip(&mut data_reader)?;
-
-                tag.set_title(music_meta.music_name);
-                tag.set_album(music_meta.album);
-                tag.set_artist(
-                    music_meta.artist.into_iter().map(|ar| ar.0).collect::<Vec<_>>().join("/"),
-                );
-                tag.add_frame(id3::frame::Comment {
-                    lang: "eng".into(),
-                    description: "".into(),
-                    text: String::from_utf8_lossy(&comment).into(),
-                });
-                tag.set_text("TSSE", TOOL_INFO);
-                tag.set_text("TENC", TOOL_INFO);
-                if let Some(image) = image {
-                    tag.add_frame(id3::frame::Picture {
-                        mime_type: image.mime_type().into(),
-                        picture_type: id3::frame::PictureType::CoverFront,
-                        description: "Cover".into(),
-                        data: image.into_data(),
-                    });
-                }
-
-                let mut result = vec![];
-                tag.write_to(&mut result, id3::Version::Id3v24)?;
-                data_reader.read_to_end(&mut result)?;
-                buffer = result;
+                buffer = Self::encode_mp3(buffer, music_meta, &comment, image)?;
             }
             _ => {}
         }
 
         Ok(Self { data: buffer, meta: meta.into() })
+    }
+
+    fn encode_mp3(
+        buffer: Vec<u8>,
+        music_meta: MusicMeta,
+        comment: &[u8],
+        image: Option<ncm_core::image::Image>,
+    ) -> Result<Vec<u8>> {
+        let (mut tag, had_existing_tag) =
+            match id3::no_tag_ok(id3::Tag::read_from2(&mut Cursor::new(&buffer)))? {
+                Some(tag) => (tag, true),
+                None => (id3::Tag::new(), false),
+            };
+        let mut data_reader = Cursor::new(&buffer);
+        if had_existing_tag {
+            id3::Tag::skip(&mut data_reader)?;
+        }
+
+        tag.set_title(music_meta.music_name);
+        tag.set_album(music_meta.album);
+        tag.set_artist(music_meta.artist.into_iter().map(|ar| ar.0).collect::<Vec<_>>().join("/"));
+        tag.add_frame(id3::frame::Comment {
+            lang: "eng".into(),
+            description: "".into(),
+            text: String::from_utf8_lossy(comment).into(),
+        });
+        tag.set_text("TSSE", TOOL_INFO);
+        tag.set_text("TENC", TOOL_INFO);
+        if let Some(image) = image {
+            tag.add_frame(id3::frame::Picture {
+                mime_type: image.mime_type().into(),
+                picture_type: id3::frame::PictureType::CoverFront,
+                description: "Cover".into(),
+                data: image.into_data(),
+            });
+        }
+
+        let mut result = vec![];
+        tag.write_to(&mut result, id3::Version::Id3v24)?;
+        data_reader.read_to_end(&mut result)?;
+        Ok(result)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{music_meta::MusicId, music_meta::MusicMeta, Encoder};
+    use id3::TagLike;
+    use std::io::Cursor;
+
+    fn music_meta() -> MusicMeta {
+        MusicMeta {
+            music_id: MusicId::Num(1),
+            music_name: "Title".into(),
+            artist: vec![("Artist".into(), MusicId::Num(2))],
+            album: "Album".into(),
+            album_pic: "".into(),
+            format: "mp3".into(),
+        }
+    }
+
+    #[test]
+    fn writes_a_new_id3_tag_for_a_bare_mp3() {
+        let audio = vec![0xFF, 0xFB, 0x90, 0, 1, 2, 3, 4];
+        let encoded = Encoder::encode_mp3(audio.clone(), music_meta(), b"comment", None).unwrap();
+
+        let tag = id3::Tag::read_from2(&mut Cursor::new(&encoded)).unwrap();
+        assert_eq!(tag.title(), Some("Title"));
+        assert_eq!(tag.album(), Some("Album"));
+        assert_eq!(tag.artist(), Some("Artist"));
+
+        let mut reader = Cursor::new(&encoded);
+        id3::Tag::skip(&mut reader).unwrap();
+        assert_eq!(&encoded[reader.position() as usize..], audio);
     }
 }
