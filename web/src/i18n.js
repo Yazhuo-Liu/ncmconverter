@@ -3,7 +3,7 @@ const COPY = {
         pageTitle: "NCM 浏览器转换器",
         metaDescription: "在浏览器本地将网易云音乐 NCM 文件转换为原始音频，不上传文件。",
         skipLink: "跳到转换区域",
-        languageLabel: "语言",
+        languageLabel: "Language",
         heading: "NCM 浏览器转换器",
         heroCopy: "将 .ncm 文件还原为 MP3、FLAC、M4A 或 OGG，转换完成后即可试听和下载。",
         privacyBadge: "本地处理 · 不会上传",
@@ -48,7 +48,7 @@ const COPY = {
         metaDescription:
             "Convert NetEase Cloud Music NCM files to their original audio format locally in your browser. Files are never uploaded.",
         skipLink: "Skip to converter",
-        languageLabel: "Language",
+        languageLabel: "语言",
         heading: "NCM Browser Converter",
         heroCopy:
             "Restore .ncm files to MP3, FLAC, M4A, or OGG, then preview and download the converted audio.",
