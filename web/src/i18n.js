@@ -18,6 +18,9 @@ const COPY = {
         clearList: "清空列表",
         emptyState: "选择文件后，转换状态和下载操作会显示在这里。",
         fileListLabel: "转换文件列表",
+        disclaimerTitle: "免责声明",
+        disclaimerText:
+            "请仅将本工具用于您有权解密、转换或以其他方式处理的音频文件。因使用本工具而产生的一切法律责任及其他后果均由使用者自行承担，与工具开发者及贡献者无关。",
         footerPrivacy: "所有文件只在当前浏览器标签页内处理，不会发送到任何服务器。",
         builtFrom: "基于 MIT 许可的",
         builtSuffix: "构建",
@@ -64,6 +67,9 @@ const COPY = {
         clearList: "Clear list",
         emptyState: "Conversion status and download actions will appear here after you choose files.",
         fileListLabel: "Conversion file list",
+        disclaimerTitle: "Disclaimer",
+        disclaimerText:
+            "Use this tool only with audio files you are legally authorized to decrypt, convert, or otherwise process. You are solely responsible for all legal liabilities and other consequences arising from its use; the developers and contributors accept no responsibility.",
         footerPrivacy:
             "All files are processed only in this browser tab and are never sent to a server.",
         builtFrom: "Built from the MIT-licensed",
