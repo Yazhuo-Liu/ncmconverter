@@ -1,7 +1,8 @@
 [package]
 name = "ncm_meta"
+publish = false
 
-description = "music meta utils for ncmc"
+description = "Metadata writer for decoded NCM audio files."
 keywords    = ["ncm", "ncmc", "ncmdump"]
 
 authors    = { workspace = true }

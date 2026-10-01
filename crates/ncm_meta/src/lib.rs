@@ -13,6 +13,36 @@ use crate::music_meta::MusicMeta;
 
 const TOOL_INFO: &str = include_str!("tool_info");
 
+/// The user-facing track metadata stored in an NCM file.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct TrackMetadata {
+    pub title: String,
+    pub artists: Vec<String>,
+    pub album: String,
+}
+
+/// Parse the metadata JSON emitted by [`Decoder`].
+///
+/// NCM files without metadata are valid and return `Ok(None)`.
+pub fn track_metadata(meta: &[u8]) -> Result<Option<TrackMetadata>> {
+    if meta.is_empty() {
+        return Ok(None);
+    }
+
+    let meta = String::from_utf8_lossy(meta);
+    let music_meta = parse_music_meta(&meta)?;
+
+    Ok(Some(TrackMetadata {
+        title: music_meta.music_name,
+        artists: music_meta.artist.into_iter().map(|artist| artist.0).collect(),
+        album: music_meta.album,
+    }))
+}
+
+fn parse_music_meta(meta: &str) -> Result<MusicMeta> {
+    json::from_str(meta).with_context(|| format!("failed to unpack: {meta}"))
+}
+
 pub struct Encoder {
     pub data: Vec<u8>,
     pub meta: String,
@@ -35,8 +65,7 @@ impl Encoder {
         }
 
         let meta = String::from_utf8_lossy(&meta);
-        let music_meta: MusicMeta =
-            json::from_str(&meta).with_context(|| format!("failed to unpack: {meta}"))?;
+        let music_meta = parse_music_meta(&meta)?;
 
         match audio_type {
             AudioType::Flac => {
@@ -117,7 +146,7 @@ impl Encoder {
 
 #[cfg(test)]
 mod tests {
-    use super::{music_meta::MusicId, music_meta::MusicMeta, Encoder};
+    use super::{music_meta::MusicId, music_meta::MusicMeta, track_metadata, Encoder};
     use id3::TagLike;
     use std::io::Cursor;
 
@@ -145,5 +174,16 @@ mod tests {
         let mut reader = Cursor::new(&encoded);
         id3::Tag::skip(&mut reader).unwrap();
         assert_eq!(&encoded[reader.position() as usize..], audio);
+    }
+
+    #[test]
+    fn exposes_user_facing_track_metadata() {
+        let meta = br#"{"format":"mp3","musicId":1,"musicName":"Title","artist":[["First",2],["Second",3]],"album":"Album","albumPic":""}"#;
+        let parsed = track_metadata(meta).unwrap().unwrap();
+
+        assert_eq!(parsed.title, "Title");
+        assert_eq!(parsed.artists, ["First", "Second"]);
+        assert_eq!(parsed.album, "Album");
+        assert_eq!(track_metadata(&[]).unwrap(), None);
     }
 }

@@ -1,0 +1,18 @@
+{
+    "name": "ncmconvertor-web",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "engines": {
+        "node": ">=20.19.0"
+    },
+    "scripts": {
+        "wasm": "wasm-pack build ../crates/ncmc_wasm --target web --release --out-dir ../../web/src/wasm",
+        "dev": "npm run wasm && vite",
+        "build": "npm run wasm && vite build",
+        "verify:wasm": "npm run wasm && node scripts/verify-wasm.mjs"
+    },
+    "devDependencies": {
+        "vite": "8.3.1"
+    }
+}

@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+            name="description"
+            content="在浏览器本地将网易云音乐 NCM 文件转换为原始音频，不上传文件。"
+        />
+        <meta name="color-scheme" content="light dark" />
+        <title>NCM 浏览器转换器</title>
+        <link rel="icon" type="image/png" href="./asserts/ncmconvertor_logo_no_title.png" />
+        <meta
+            http-equiv="Content-Security-Policy"
+            content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; connect-src 'self'; worker-src 'self'; media-src blob:; object-src 'none'; base-uri 'self'; form-action 'none'"
+        />
+        <link rel="stylesheet" href="/src/style.css" />
+    </head>
+    <body>
+        <a class="skip-link" href="#converter" data-i18n="skipLink">跳到转换区域</a>
+
+        <main class="page-shell">
+            <div class="site-toolbar">
+                <img
+                    class="site-logo"
+                    src="./asserts/ncmconvertor_logo.png"
+                    alt="NCM Converter"
+                    width="3733"
+                    height="729"
+                />
+                <div class="language-control">
+                    <span id="language-label" data-i18n="languageLabel">语言</span>
+                    <div
+                        class="language-switch"
+                        role="group"
+                        aria-labelledby="language-label"
+                    >
+                        <button type="button" data-language="zh" aria-pressed="true">中文</button>
+                        <button type="button" data-language="en" aria-pressed="false">EN</button>
+                    </div>
+                </div>
+            </div>
+
+            <header class="hero">
+                <div>
+                    <p class="eyebrow">NCM Converter</p>
+                    <h1 data-i18n="heading">NCM 浏览器转换器</h1>
+                    <p class="hero-copy" data-i18n="heroCopy">
+                        将 .ncm 文件还原为 MP3、FLAC、M4A 或 OGG，转换完成后即可试听和下载。
+                    </p>
+                </div>
+                <p class="privacy-badge">
+                    <span aria-hidden="true">●</span>
+                    <span data-i18n="privacyBadge">本地处理 · 不会上传</span>
+                </p>
+            </header>
+
+            <section id="converter" class="converter-card" aria-labelledby="converter-title">
+                <h2 id="converter-title" class="visually-hidden" data-i18n="converterTitle">
+                    转换 NCM 文件
+                </h2>
+
+                <div id="drop-zone" class="drop-zone">
+                    <div class="drop-icon" aria-hidden="true">↓</div>
+                    <p class="drop-title" data-i18n="dropTitle">拖放 .ncm 文件到这里</p>
+                    <p id="drop-description" class="drop-copy" data-i18n="dropCopy">
+                        支持一次选择多个文件，也可以点击下方按钮
+                    </p>
+                    <button
+                        id="select-files"
+                        class="primary-button"
+                        type="button"
+                        aria-describedby="drop-description memory-guidance"
+                    >
+                        <span data-i18n="selectFiles">选择文件</span>
+                    </button>
+                    <input
+                        id="file-input"
+                        class="visually-hidden"
+                        type="file"
+                        accept=".ncm,application/octet-stream"
+                        multiple
+                        aria-label="选择 NCM 文件"
+                        data-i18n-aria-label="fileInputLabel"
+                    />
+                    <p id="memory-guidance" class="memory-guidance" data-i18n="memoryGuidance">
+                        大文件会同时占用浏览器内存进行解密；设备内存不足时请减少同时选择的文件数量。
+                    </p>
+                </div>
+
+                <div class="list-toolbar">
+                    <div>
+                        <h2 data-i18n="filesHeading">转换文件</h2>
+                        <p id="file-summary" class="file-summary" aria-live="polite">
+                            尚未添加文件
+                        </p>
+                    </div>
+                    <button id="clear-list" class="secondary-button" type="button" disabled>
+                        <span data-i18n="clearList">清空列表</span>
+                    </button>
+                </div>
+
+                <div id="empty-state" class="empty-state">
+                    <p data-i18n="emptyState">选择文件后，转换状态和下载操作会显示在这里。</p>
+                </div>
+                <ul
+                    id="file-list"
+                    class="file-list"
+                    aria-label="转换文件列表"
+                    data-i18n-aria-label="fileListLabel"
+                ></ul>
+            </section>
+
+            <footer>
+                <p data-i18n="footerPrivacy">
+                    所有文件只在当前浏览器标签页内处理，不会发送到任何服务器。
+                </p>
+                <p>
+                    <span data-i18n="builtFrom">基于 MIT 许可的</span>
+                    <a href="https://github.com/ghostroller/ncmc">ncmc</a>
+                    <span data-i18n="builtSuffix">构建</span> ·
+                    <a href="https://github.com/Yazhuo-Liu/ncmconverter" data-i18n="viewSource"
+                        >查看源码</a
+                    >
+                </p>
+            </footer>
+        </main>
+
+        <script type="module" src="/src/main.js"></script>
+    </body>
+</html>

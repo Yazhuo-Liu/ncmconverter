@@ -1,7 +1,8 @@
 [package]
 name = "ncmc_wasm"
+publish = false
 
-description = "convert encrypted ncm file to original music file."
+description = "Browser WebAssembly bindings for the NCM converter."
 keywords    = ["ncm", "ncmc", "converter", "ncmdump"]
 
 authors    = { workspace = true }
@@ -18,7 +19,6 @@ anyhow             = { workspace = true }
 js-sys             = { workspace = true }
 ncm_core           = { workspace = true }
 ncm_meta           = { workspace = true }
-serde-wasm-bindgen = { workspace = true }
 wasm-bindgen       = { workspace = true }
 
 [lib]
